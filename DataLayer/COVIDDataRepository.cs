@@ -25,81 +25,121 @@ namespace DataLayer
             _httpClientMgr = httpClient;
         }
 
-        public async Task<string> LoadCovidCases()
+        public async Task<NetworkStatus<List<CountryData>>> LoadCountryCovidCases()
         {
-            var result = await _httpClientMgr.GetAsync(_covidCasesNowUrl);
-            ParseWorldometersSiteData(result.Result);
-            return result.Result;
+            _covidCountryData.Clear();
+            var result = new NetworkStatus<List<CountryData>>();
+
+            var pageSourceResult = await _httpClientMgr.GetAsync(_covidCasesNowUrl);
+            if(!pageSourceResult.Succeeded)
+            {
+                result.ErrorMessage = "Error loading content from " + _covidCasesNowUrl;
+                result.ErrorCode = pageSourceResult.ErrorCode;
+                return result;
+            }
+
+            var parseSuccess = TryParseWorldometersSiteData(pageSourceResult.Result);
+            if(!parseSuccess)
+            {
+                result.ErrorMessage = "Error parsing content from " + _covidCasesNowUrl;
+            }
+            else
+            {
+                result.Result = _covidCountryData;
+                result.Succeeded = true;
+            }
+            return result;
         }
 
-        private void ParseWorldometersSiteData(string pageSource)
+        private bool TryParseWorldometersSiteData(string pageSource)
         {
-            var pageHtmlDoc = new HtmlDocument();
-            pageHtmlDoc.LoadHtml(pageSource);
-
-            var covidTableByCountry = pageHtmlDoc.GetElementbyId(_covidCountriesTableId);
-
-            var tableNodes = covidTableByCountry.ChildNodes;
-            var tableBodyNode = tableNodes.FirstOrDefault(n => n.Name == _tableBodyName);
-
-            foreach(var row in tableBodyNode.ChildNodes)
+            try
             {
-                if(row.Name == _tableRowName)
-                {
-                    var newCountryData = new CountryData();
+                var pageHtmlDoc = new HtmlDocument();
+                pageHtmlDoc.LoadHtml(pageSource);
 
-                    int indexColumn = 0;
-                    foreach(var col in row.ChildNodes)
+                var covidTableByCountry = pageHtmlDoc.GetElementbyId(_covidCountriesTableId);
+
+                var tableNodes = covidTableByCountry.ChildNodes;
+                var tableBodyNode = tableNodes.FirstOrDefault(n => n.Name == _tableBodyName);
+
+                foreach (var row in tableBodyNode.ChildNodes)
+                {
+                    if (row.Name == _tableRowName)
                     {
-                        if(col.Name == _tableDataName)
+                        var newCountryData = new CountryData();
+
+                        int indexColumn = 0;
+                        foreach (var col in row.ChildNodes)
                         {
-                            if (!Int32.TryParse(col.InnerText.TrimStart('+').Trim(), NumberStyles.AllowThousands, null, out var res))
+                            if (col.Name == _tableDataName)
                             {
-                                ;
+                                int intValue = 0;
+                                DateTime dateTimeValue = DateTime.MinValue;
+                                string stringValue = "";
+
+                                if (indexColumn == 0)
+                                {
+                                    stringValue = col.InnerText.Trim();
+                                }
+                                else if (indexColumn == 10)
+                                {
+                                    if (!string.IsNullOrWhiteSpace(col.InnerText))
+                                        DateTime.TryParse(col.InnerText.Trim(), null, DateTimeStyles.AllowWhiteSpaces, out dateTimeValue);
+                                }
+                                else if (!string.IsNullOrWhiteSpace(col.InnerText))
+                                {
+                                    Int32.TryParse(col.InnerText.TrimStart('+').Trim(), NumberStyles.AllowThousands, null, out intValue);
+                                }
+
+                                switch (indexColumn)
+                                {
+                                    case 0:
+                                        newCountryData.CountryName = stringValue;
+                                        break;
+                                    case 1:
+                                        newCountryData.TotalCases = intValue;
+                                        break;
+                                    case 2:
+                                        newCountryData.NewCases = intValue;
+                                        break;
+                                    case 3:
+                                        newCountryData.TotalDeaths = intValue;
+                                        break;
+                                    case 4:
+                                        newCountryData.NewDeaths = intValue;
+                                        break;
+                                    case 5:
+                                        newCountryData.TotalRecovered = intValue;
+                                        break;
+                                    case 6:
+                                        newCountryData.ActiveCases = intValue;
+                                        break;
+                                    case 7:
+                                        newCountryData.SeriousCriticalCases = intValue;
+                                        break;
+                                    case 8:
+                                        newCountryData.TotalCasesPerMillion = intValue;
+                                        break;
+                                    case 9:
+                                        newCountryData.TotalDeathsPerMillion = intValue;
+                                        break;
+                                    case 10:
+                                        newCountryData.ReportedFirstCase = dateTimeValue;
+                                        break;
+                                }
+                                indexColumn++;
                             }
-                            switch (indexColumn)
-                            {
-                                
-                                case 0:
-                                    newCountryData.CountryName = col.InnerText;
-                                    break;
-                                case 1:
-                                    newCountryData.TotalCases = Int32.Parse(col.InnerText.Trim(), NumberStyles.AllowThousands);
-                                    break;
-                                case 2:
-                                    newCountryData.NewCases = Int32.Parse(col.InnerText.TrimStart('+').Trim(), NumberStyles.AllowThousands);
-                                    break;
-                                case 3:
-                                    newCountryData.TotalDeaths = Int32.Parse(col.InnerText.Trim(), NumberStyles.AllowThousands);
-                                    break;
-                                case 4:
-                                    newCountryData.NewDeaths = Int32.Parse(col.InnerText.TrimStart('+').Trim(), NumberStyles.AllowThousands);
-                                    break;
-                                case 5:
-                                    newCountryData.TotalRecovered = Int32.Parse(col.InnerText.Trim(), NumberStyles.AllowThousands);
-                                    break;
-                                case 6:
-                                    newCountryData.ActiveCases = Int32.Parse(col.InnerText.Trim(), NumberStyles.AllowThousands);
-                                    break;
-                                case 7:
-                                    newCountryData.SeriousCriticalCases = Int32.Parse(col.InnerText.Trim(), NumberStyles.AllowThousands);
-                                    break;
-                                case 8:
-                                    newCountryData.TotalCasesPerMillion = Int32.Parse(col.InnerText.Trim(), NumberStyles.AllowThousands);
-                                    break;
-                                case 9:
-                                    newCountryData.TotalDeathsPerMillion = Int32.Parse(col.InnerText.Trim(), NumberStyles.AllowThousands);
-                                    break;
-                                case 10:
-                                    newCountryData.ReportedFirstCase = DateTime.Parse(col.InnerText.Trim(), null, DateTimeStyles.AllowWhiteSpaces);
-                                    break;
-                            }
-                            indexColumn++;
                         }
+                        _covidCountryData.Add(newCountryData);
                     }
-                    _covidCountryData.Add(newCountryData);
                 }
             }
+            catch (Exception ex)
+            {
+                return false;
+            }
+            return true;
         }
     }
 }

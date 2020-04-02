@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DataLayer;
+using DataLayer.Models;
 using Xamarin.Forms;
 
 namespace COVID19_DataApp
@@ -15,15 +16,34 @@ namespace COVID19_DataApp
     public partial class MainPage : ContentPage
     {
         private COVIDDataRepository _dataRepository;
+        private List<CountryData> _covidCountryData;
+
         public MainPage(COVIDDataRepository dataRepository)
         {
             _dataRepository = dataRepository;
             InitializeComponent();
         }
 
-        private async void LoadCOVIDCases_Clicked(System.Object sender, System.EventArgs e)
+        //TODO: Setup UI for displaying COVID 19 data by country
+        public void InitializeUI()
         {
-            var covidCases = await _dataRepository.LoadCovidCases();
+
+        }
+
+        protected async override void OnAppearing()
+        {
+            var covidDataResult = await _dataRepository.LoadCountryCovidCases();
+            activityIndicator.IsRunning = false;
+
+            errMsg.IsVisible = true;
+            if (!covidDataResult.Succeeded)
+                errMsg.Text = covidDataResult.ErrorMessage;
+            else
+            {
+                _covidCountryData = covidDataResult.Result;
+                errMsg.Text = "Successfully loaded data from https://www.worldometers.info/coronavirus";
+                InitializeUI();
+            }
         }
     }
 }
