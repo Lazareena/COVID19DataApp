@@ -1,18 +1,50 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:d="http://xamarin.com/schemas/2014/forms/design" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" x:Class="COVID19_DataApp.MainPage">
-    <StackLayout>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             x:Class="COVID19_DataApp.MainPage">
+    <AbsoluteLayout x:Name="MainLayout"
+                    VerticalOptions="FillAndExpand"
+                    HorizontalOptions="FillAndExpand"
+                    Margin="10,40,10,10">
        <ActivityIndicator
            x:Name="activityIndicator"
-           HorizontalOptions="Center"
-           VerticalOptions="CenterAndExpand"
            IsRunning="True"
-           Color="Black">
+           Color="Black"
+           AbsoluteLayout.LayoutFlags="PositionProportional" 
+           AbsoluteLayout.LayoutBounds="0.5,0.5,-1,-1">
        </ActivityIndicator>
         <Label x:Name="errMsg"
-               HorizontalOptions="Center"
-               VerticalOptions="CenterAndExpand"
                Padding="10"
-               IsVisible="false">
+               IsVisible="false" 
+               AbsoluteLayout.LayoutFlags="PositionProportional" 
+               AbsoluteLayout.LayoutBounds="0.5,0.5,-1,-1">
         </Label>
-    </StackLayout>
+        <CollectionView x:Name="CountryList"                 
+                        Margin="10"  
+                        AbsoluteLayout.LayoutFlags="PositionProportional" 
+                        AbsoluteLayout.LayoutBounds="0.5,0.5,-1,-1">
+            <CollectionView.ItemsLayout>
+                <GridItemsLayout Orientation="Vertical" Span="2"/>
+            </CollectionView.ItemsLayout>
+            <CollectionView.Header>
+                <Entry x:Name="SearchEntry" Margin="10" Placeholder="Search Country">
+                </Entry>    
+            </CollectionView.Header>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                      <StackLayout>
+                          <Frame CornerRadius="5" Padding="10,5,10,5" Margin="5" BackgroundColor="LightYellow">
+                              <Label Text="{Binding CountryName}" BackgroundColor="Transparent">
+                              </Label>
+                              <Frame.GestureRecognizers>
+                                  <TapGestureRecognizer Tapped="Country_Tapped"></TapGestureRecognizer>
+                              </Frame.GestureRecognizers>
+                          </Frame>
+                      </StackLayout>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </AbsoluteLayout>
 </ContentPage>
