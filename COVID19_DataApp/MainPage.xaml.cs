@@ -19,6 +19,7 @@ namespace COVID19_DataApp
     {
         private COVIDDataRepository _dataRepository;
         private List<CountryData> _covidCountryData;
+        private CountryData _worldData;
 
         public MainPage(COVIDDataRepository dataRepository)
         {
@@ -30,6 +31,7 @@ namespace COVID19_DataApp
         public void InitializeUI()
         {
             var displayCovidCountryList = _covidCountryData;
+            WorldLayout.BindingContext = _worldData;
             CountryList.ItemsSource = displayCovidCountryList;
 
             SearchEntry.TextChanged += SearchEntry_TextChanged;
@@ -65,19 +67,22 @@ namespace COVID19_DataApp
             else
             {
                 _covidCountryData = covidDataResult.Result;
+                _worldData = _dataRepository.GetTotalWorldNoLoad();
                 InitializeUI();
             }
         }
 
         private void Country_Tapped(System.Object sender, System.EventArgs e)
         {
-            var frame = sender as Frame;
-            var bindingContext = frame?.BindingContext as CountryData;
+            var collectionView = sender as CollectionView;
+            var bindingContext = collectionView?.SelectedItem as CountryData;
 
             if (bindingContext == null)
                 return;
+            collectionView.SelectedItem = null;
 
-            var countryDetailsPage = new CountryDetailsPage(bindingContext);
+            var countryDetailsPage = new CountryDetailsPage();
+            countryDetailsPage.BindingContext = bindingContext;
 
             countryDetailsPage.OnClose = () =>
             {

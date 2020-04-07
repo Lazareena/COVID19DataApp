@@ -14,11 +14,13 @@ namespace DataLayer
 
         private const string _covidCasesNowUrl = "https://www.worldometers.info/coronavirus";
         private const string _covidCountriesTableId = "main_table_countries_today";
+        private const string _worldClassName = "total_row_world";
         private const string _tableBodyName = "tbody";
         private const string _tableRowName = "tr";
         private const string _tableDataName = "td";
 
         private List<CountryData> _covidCountryData = new List<CountryData>();
+        private CountryData _totalWorldCovidData;
             
         public COVIDDataRepository(HttpClientMgr httpClient)
         {
@@ -51,6 +53,11 @@ namespace DataLayer
             return result;
         }
 
+        public CountryData GetTotalWorldNoLoad()
+        {
+            return _totalWorldCovidData;
+        }
+
         private bool TryParseWorldometersSiteData(string pageSource)
         {
             try
@@ -67,6 +74,7 @@ namespace DataLayer
                 {
                     if (row.Name == _tableRowName)
                     {
+                        var isTotalWorldRow = row.Attributes.Any(a => a.Name == "class" && a.Value == _worldClassName);
                         var newCountryData = new CountryData();
 
                         int indexColumn = 0;
@@ -131,7 +139,10 @@ namespace DataLayer
                                 indexColumn++;
                             }
                         }
-                        _covidCountryData.Add(newCountryData);
+                        if (!isTotalWorldRow)
+                            _covidCountryData.Add(newCountryData);
+                        else
+                            _totalWorldCovidData = newCountryData;
                     }
                 }
             }
