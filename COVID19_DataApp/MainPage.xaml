@@ -9,7 +9,9 @@
                     VerticalOptions="FillAndExpand"
                     HorizontalOptions="FillAndExpand">
         <AbsoluteLayout.Margin>
-            <OnPlatform macOS="10,40,10,10"></OnPlatform>
+            <OnPlatform x:TypeArguments="Thickness">
+                <On Platform="iOS" Value="10,40,10,10" />
+             </OnPlatform>
         </AbsoluteLayout.Margin>
        <ActivityIndicator
            x:Name="activityIndicator"
@@ -36,31 +38,26 @@
             <CollectionView.Header>
                 <Grid Padding="5" x:Name="WorldLayout">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="*"></RowDefinition>
-                        <RowDefinition Height="*"></RowDefinition>
-                        <RowDefinition Height="*"></RowDefinition>
-                        <RowDefinition Height="*"></RowDefinition>
-                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"></RowDefinition>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition></ColumnDefinition>
                         <ColumnDefinition></ColumnDefinition>
                     </Grid.ColumnDefinitions>
-                    <Label Text="COVID WORLD DATA" FontSize="Body" Grid.ColumnSpan="2" HorizontalOptions="Center" VerticalOptions="Center"></Label>
-                    <Label Grid.Row="1" Text="Total Cases: " HorizontalOptions="End" VerticalOptions="Center"></Label>
-                    <Label Grid.Row="1" Grid.Column="1" Text="{Binding TotalCases, StringFormat='{}{0:0,0}'}" HorizontalOptions="Start" VerticalOptions="Center"></Label>
+                    <Label Text="COVID WORLD DATA" FontSize="Medium" Grid.ColumnSpan="2" HorizontalOptions="Center" VerticalOptions="Center"></Label>
+                    <Label Text="https://www.worldometers.info/coronavirus/" Grid.Row="1" FontSize="Medium" Grid.ColumnSpan="2" HorizontalOptions="Center" VerticalOptions="Center"></Label>
 
-                    <Label Grid.Row="2" Text="Total Deaths: " HorizontalOptions="End" VerticalOptions="Center"></Label>
-                    <Label Grid.Row="2" Grid.Column="1" Text="{Binding TotalDeaths, StringFormat='{}{0:0,0}'}" HorizontalOptions="Start" VerticalOptions="Center"></Label>
+                    <Label Grid.Row="2" Text="Total Cases: " HorizontalOptions="End" VerticalOptions="Center"></Label>
+                    <Label Grid.Row="2" Grid.Column="1" Text="{Binding TotalCases, StringFormat='{}{0:0,0}'}" HorizontalOptions="Start" VerticalOptions="Center"></Label>
 
-                    <Label Grid.Row="3" Text="New Cases: " HorizontalOptions="End" VerticalOptions="Center"></Label>
-                    <Label Grid.Row="3" Grid.Column="1" Text="{Binding NewCases, StringFormat='{}{0:+0}'}" HorizontalOptions="Start" VerticalOptions="Center"></Label>
+                    <Label Grid.Row="3" Text="Total Deaths: " HorizontalOptions="End" VerticalOptions="Center"></Label>
+                    <Label Grid.Row="3" Grid.Column="1" Text="{Binding TotalDeaths, StringFormat='{}{0:0,0}'}" HorizontalOptions="Start" VerticalOptions="Center"></Label>
 
-                    <Label Grid.Row="4" Text="New Deaths: " HorizontalOptions="End" VerticalOptions="Center"></Label>
-                    <Label Grid.Row="4" Grid.Column="1" Text="{Binding NewDeaths, StringFormat='{}{0:+0}'}" HorizontalOptions="Start" VerticalOptions="Center"></Label>
-
-                    <Entry Grid.Row="5" Grid.ColumnSpan="2" x:Name="SearchEntry" Placeholder="Search Country">
+                    <Entry Grid.Row="4" Grid.ColumnSpan="2" x:Name="SearchEntry" Placeholder="Search Country">
                     </Entry>
                 </Grid>
             </CollectionView.Header>
