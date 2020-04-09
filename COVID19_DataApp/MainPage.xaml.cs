@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using DataLayer;
 using DataLayer.Models;
+using DataLayer.ViewModel;
 using Xamarin.Forms;
 
 namespace COVID19_DataApp
@@ -18,8 +19,9 @@ namespace COVID19_DataApp
     public partial class MainPage : ContentPage
     {
         private COVIDDataRepository _dataRepository;
-        private List<CountryData> _covidCountryData;
-        private CountryData _worldData;
+        private List<CovidCountryViewModel> _covidCountryData;
+        private List<CovidCountryViewModel> _displayedCovidCountryList;
+        private CovidCountryViewModel  _worldData;
 
         public MainPage(COVIDDataRepository dataRepository)
         {
@@ -30,10 +32,10 @@ namespace COVID19_DataApp
         //TODO: Setup UI for displaying COVID 19 data by country
         public void InitializeUI()
         {
-            var displayCovidCountryList = _covidCountryData;
+            CountryList.IsVisible = true;
+            _displayedCovidCountryList = _covidCountryData;
             WorldLayout.BindingContext = _worldData;
-            CountryList.ItemsSource = displayCovidCountryList;
-
+            CountryList.ItemsSource = _displayedCovidCountryList;
             SearchEntry.TextChanged += SearchEntry_TextChanged;
         }
 
@@ -45,14 +47,13 @@ namespace COVID19_DataApp
 
             var searchTerm = SearchEntry.Text.ToLower();
 
-            List<CountryData> updatedList = null;
             if (string.IsNullOrWhiteSpace(searchTerm))
-                updatedList = _covidCountryData;
+                _displayedCovidCountryList = _covidCountryData;
             else
-                updatedList = _covidCountryData.Where(c => c.CountryName.Length >= searchTerm.Length &&
+                _displayedCovidCountryList = _covidCountryData.Where(c => c.CountryName.Length >= searchTerm.Length &&
                                                            (string.Equals(c.CountryName, searchTerm, StringComparison.InvariantCultureIgnoreCase)
                                                             || c.CountryName.ToLower().Contains(searchTerm))).ToList();
-            CountryList.ItemsSource = updatedList;
+            CountryList.ItemsSource = _displayedCovidCountryList;
             _searchEntryLock.Release();
         }
 
@@ -75,7 +76,7 @@ namespace COVID19_DataApp
         private void Country_Tapped(System.Object sender, System.EventArgs e)
         {
             var collectionView = sender as CollectionView;
-            var bindingContext = collectionView?.SelectedItem as CountryData;
+            var bindingContext = collectionView?.SelectedItem as CovidCountryViewModel;
 
             if (bindingContext == null)
                 return;
@@ -89,6 +90,16 @@ namespace COVID19_DataApp
                 MainLayout.Children.Remove(countryDetailsPage);
             };
             MainLayout.Children.Add(countryDetailsPage);
+        }
+
+        private void DaySwitch_Toggled(System.Object sender, Xamarin.Forms.ToggledEventArgs e)
+        {
+            _worldData.DisplayNewCasesToday = e.Value;
+            if(_displayedCovidCountryList != null)
+            {
+                foreach (var c in _displayedCovidCountryList)
+                    c.DisplayNewCasesToday = e.Value;
+            }
         }
     }
 }

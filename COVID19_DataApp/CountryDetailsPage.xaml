@@ -28,10 +28,10 @@
             <Label Grid.Row="2" Grid.Column="1" Text="{Binding TotalDeaths, StringFormat='{}{0:0,0}'}" HorizontalOptions="Start" VerticalOptions="Center"></Label>
 
             <Label Grid.Row="3" Text="New Cases: " HorizontalOptions="End" VerticalOptions="Center"></Label>
-            <Label Grid.Row="3" Grid.Column="1" Text="{Binding NewCases, StringFormat='{}{0:+0}'}" HorizontalOptions="Start" VerticalOptions="Center"></Label>
+            <Label Grid.Row="3" Grid.Column="1" Text="{Binding NewCases, StringFormat='{}{0:+0,0}'}" HorizontalOptions="Start" VerticalOptions="Center"></Label>
 
             <Label Grid.Row="4" Text="New Deaths: " HorizontalOptions="End" VerticalOptions="Center"></Label>
-            <Label Grid.Row="4" Grid.Column="1" Text="{Binding NewDeaths, StringFormat='{}{0:+0}'}" HorizontalOptions="Start" VerticalOptions="Center"></Label>
+            <Label Grid.Row="4" Grid.Column="1" Text="{Binding NewDeaths, StringFormat='{}{0:+0,0}'}" HorizontalOptions="Start" VerticalOptions="Center"></Label>
 
             <Button Grid.Row="5" Text="OKAY" Grid.ColumnSpan="2" HorizontalOptions="Center" VerticalOptions="Center" Clicked="ButtonClose_Clicked"></Button>
         </Grid>

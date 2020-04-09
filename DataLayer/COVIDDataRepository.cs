@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using DataLayer.Models;
+using DataLayer.ViewModel;
 using HtmlAgilityPack;
 
 namespace DataLayer
@@ -13,11 +14,27 @@ namespace DataLayer
         private HttpClientMgr _httpClientMgr;
 
         private const string _covidCasesNowUrl = "https://www.worldometers.info/coronavirus";
+
         private const string _covidCountriesTableId = "main_table_countries_today";
+        private const string _covidCountriesTableYesterdayId = "main_table_countries_yesterday";
+        private const string _tableRowContinentClassId = "total_row_world row_continent";
+
         private const string _worldClassName = "total_row_world";
         private const string _tableBodyName = "tbody";
         private const string _tableRowName = "tr";
         private const string _tableDataName = "td";
+
+        private const int _indexColumnCountryName = 0;
+        private const int _indexColumnTotalCases = 1;
+        private const int _indexColumnNewCases = 2;
+        private const int _indexColumnTotalDeaths = 3;
+        private const int _indexColumnNewDeaths = 4;
+        private const int _indexColumnTotalRecovered = 5;
+        private const int _indexColumnActiveCases = 6;
+        private const int _indexColumnCriticalCases = 7;
+        private const int _indexColumnCasesPerMillion = 8;
+        private const int _indexColumnDeathsPerMillion = 9;
+        private const int _indexColumnDateReportedFirstCase = 10;
 
         private List<CountryData> _covidCountryData = new List<CountryData>();
         private CountryData _totalWorldCovidData;
@@ -27,10 +44,10 @@ namespace DataLayer
             _httpClientMgr = httpClient;
         }
 
-        public async Task<NetworkStatus<List<CountryData>>> LoadCountryCovidCases()
+        public async Task<NetworkStatus<List<CovidCountryViewModel>>> LoadCountryCovidCases()
         {
             _covidCountryData.Clear();
-            var result = new NetworkStatus<List<CountryData>>();
+            var result = new NetworkStatus<List<CovidCountryViewModel>>();
 
             var pageSourceResult = await _httpClientMgr.GetAsync(_covidCasesNowUrl);
             if(!pageSourceResult.Succeeded)
@@ -47,15 +64,17 @@ namespace DataLayer
             }
             else
             {
-                result.Result = _covidCountryData;
+                result.Result = new List<CovidCountryViewModel>();
+                foreach (var c in _covidCountryData)
+                    result.Result.Add(CovidCountryViewModel.Create(c));
                 result.Succeeded = true;
             }
             return result;
         }
 
-        public CountryData GetTotalWorldNoLoad()
+        public CovidCountryViewModel GetTotalWorldNoLoad()
         {
-            return _totalWorldCovidData;
+            return CovidCountryViewModel.Create(_totalWorldCovidData);
         }
 
         private bool TryParseWorldometersSiteData(string pageSource)
@@ -66,84 +85,45 @@ namespace DataLayer
                 pageHtmlDoc.LoadHtml(pageSource);
 
                 var covidTableByCountry = pageHtmlDoc.GetElementbyId(_covidCountriesTableId);
+                var covidTableByCountryYesterday = pageHtmlDoc.GetElementbyId(_covidCountriesTableYesterdayId);
 
-                var tableNodes = covidTableByCountry.ChildNodes;
-                var tableBodyNode = tableNodes.FirstOrDefault(n => n.Name == _tableBodyName);
+                var relevantTableRows = covidTableByCountry.ChildNodes.FirstOrDefault(n => n.Name == _tableBodyName).ChildNodes
+                                                                       .Where(c => c.Name == _tableRowName && !c.Attributes.Any(a => a.Name == "class" && a.Value == _tableRowContinentClassId));
 
-                foreach (var row in tableBodyNode.ChildNodes)
+                var relevantTableRowsYesterday = covidTableByCountryYesterday.ChildNodes.FirstOrDefault(n => n.Name == _tableBodyName).ChildNodes.
+                                                                                         Where(c => c.Name == _tableRowName && !c.Attributes.Any(a => a.Name == "class" && a.Value == _tableRowContinentClassId));
+
+                foreach (var row in relevantTableRows)
                 {
-                    if (row.Name == _tableRowName)
+                    var isTotalWorldRow = row.Attributes.Any(a => a.Name == "class" && a.Value == _worldClassName);
+                    var newCountryData = new CountryData();
+
+                    var relevantColumns = row.ChildNodes.Where(c => c.Name == _tableDataName).ToList();
+
+                    newCountryData.CountryName = relevantColumns[_indexColumnCountryName].InnerText.Trim();
+                    newCountryData.TotalCases = ParseIntValue(relevantColumns[_indexColumnTotalCases].InnerText);
+                    newCountryData.NewCasesToday.NewCases = ParseIntValue(relevantColumns[_indexColumnNewCases].InnerText);
+                    newCountryData.TotalDeaths = ParseIntValue(relevantColumns[_indexColumnTotalDeaths].InnerText);
+                    newCountryData.NewCasesToday.NewDeaths = ParseIntValue(relevantColumns[_indexColumnNewDeaths].InnerText);
+                    newCountryData.TotalRecovered = ParseIntValue(relevantColumns[_indexColumnTotalRecovered].InnerText);
+                    newCountryData.ActiveCases = ParseIntValue(relevantColumns[_indexColumnActiveCases].InnerText);
+                    newCountryData.SeriousCriticalCases = ParseIntValue(relevantColumns[_indexColumnCriticalCases].InnerText);
+                    newCountryData.TotalCasesPerMillion = ParseIntValue(relevantColumns[_indexColumnCasesPerMillion].InnerText);
+                    newCountryData.TotalDeathsPerMillion = ParseIntValue(relevantColumns[_indexColumnDeathsPerMillion].InnerText);
+                    newCountryData.ReportedFirstCase = ParseDateTime(relevantColumns[_indexColumnDateReportedFirstCase].InnerText);
+
+                    var yesterdaysData = relevantTableRowsYesterday.FirstOrDefault(r => r.ChildNodes.Any(c => c.Name == _tableDataName && c.InnerText == newCountryData.CountryName));
+                    if(yesterdaysData != null)
                     {
-                        var isTotalWorldRow = row.Attributes.Any(a => a.Name == "class" && a.Value == _worldClassName);
-                        var newCountryData = new CountryData();
-
-                        int indexColumn = 0;
-                        foreach (var col in row.ChildNodes)
-                        {
-                            if (col.Name == _tableDataName)
-                            {
-                                int intValue = 0;
-                                DateTime dateTimeValue = DateTime.MinValue;
-                                string stringValue = "";
-
-                                if (indexColumn == 0)
-                                {
-                                    stringValue = col.InnerText.Trim();
-                                }
-                                else if (indexColumn == 10)
-                                {
-                                    if (!string.IsNullOrWhiteSpace(col.InnerText))
-                                        DateTime.TryParse(col.InnerText.Trim(), null, DateTimeStyles.AllowWhiteSpaces, out dateTimeValue);
-                                }
-                                else if (!string.IsNullOrWhiteSpace(col.InnerText))
-                                {
-                                    Int32.TryParse(col.InnerText.TrimStart('+').Trim(), NumberStyles.AllowThousands, null, out intValue);
-                                }
-
-                                switch (indexColumn)
-                                {
-                                    case 0:
-                                        newCountryData.CountryName = stringValue;
-                                        break;
-                                    case 1:
-                                        newCountryData.TotalCases = intValue;
-                                        break;
-                                    case 2:
-                                        newCountryData.NewCases = intValue;
-                                        break;
-                                    case 3:
-                                        newCountryData.TotalDeaths = intValue;
-                                        break;
-                                    case 4:
-                                        newCountryData.NewDeaths = intValue;
-                                        break;
-                                    case 5:
-                                        newCountryData.TotalRecovered = intValue;
-                                        break;
-                                    case 6:
-                                        newCountryData.ActiveCases = intValue;
-                                        break;
-                                    case 7:
-                                        newCountryData.SeriousCriticalCases = intValue;
-                                        break;
-                                    case 8:
-                                        newCountryData.TotalCasesPerMillion = intValue;
-                                        break;
-                                    case 9:
-                                        newCountryData.TotalDeathsPerMillion = intValue;
-                                        break;
-                                    case 10:
-                                        newCountryData.ReportedFirstCase = dateTimeValue;
-                                        break;
-                                }
-                                indexColumn++;
-                            }
-                        }
-                        if (!isTotalWorldRow)
-                            _covidCountryData.Add(newCountryData);
-                        else
-                            _totalWorldCovidData = newCountryData;
+                        var relevantColumnsYesterday = yesterdaysData.ChildNodes.Where(c => c.Name == _tableDataName).ToList();
+                        newCountryData.NewCasesYesterday.NewCases = ParseIntValue(relevantColumnsYesterday[_indexColumnNewCases].InnerText);
+                        newCountryData.NewCasesYesterday.NewDeaths = ParseIntValue(relevantColumnsYesterday[_indexColumnNewDeaths].InnerText);
                     }
+
+                    if (!isTotalWorldRow)
+                        _covidCountryData.Add(newCountryData);
+                    else
+                        _totalWorldCovidData = newCountryData;
                 }
             }
             catch (Exception ex)
@@ -151,6 +131,22 @@ namespace DataLayer
                 return false;
             }
             return true;
+        }
+
+        private int ParseIntValue(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return 0;
+            Int32.TryParse(value.TrimStart('+').Trim(), NumberStyles.AllowThousands, null, out var intValue);
+            return intValue;
+        }
+
+        private DateTime ParseDateTime(string value)
+        {
+            DateTime dateTimeValue = DateTime.MinValue;
+            if (!string.IsNullOrWhiteSpace(value))
+                DateTime.TryParse(value.Trim(), null, DateTimeStyles.AllowWhiteSpaces, out dateTimeValue);
+            return dateTimeValue;
         }
     }
 }

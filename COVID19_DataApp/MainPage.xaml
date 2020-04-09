@@ -5,6 +5,13 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:local="clr-namespace:COVID19_DataApp"
              x:Class="COVID19_DataApp.MainPage">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <Color x:Key="colorNewCasesLessThanThousand">LightGreen</Color>
+            <Color x:Key="colorNewCasesMoreThanThousand">Red</Color>
+            <Color x:Key="colorNewCasesAndDeathsMoreThanThousand">DarkRed</Color>
+        </ResourceDictionary>
+    </ContentPage.Resources>
     <AbsoluteLayout x:Name="MainLayout"
                     VerticalOptions="FillAndExpand"
                     HorizontalOptions="FillAndExpand">
@@ -26,51 +33,108 @@
                AbsoluteLayout.LayoutFlags="PositionProportional" 
                AbsoluteLayout.LayoutBounds="0.5,0.5,-1,-1">
         </Label>
-        <CollectionView x:Name="CountryList"                 
-                        Margin="10"  
-                        AbsoluteLayout.LayoutFlags="PositionProportional" 
-                        AbsoluteLayout.LayoutBounds="0.5,0.5,-1,-1"
-                        SelectionChanged="Country_Tapped"
-                        SelectionMode="Single">
-            <CollectionView.ItemsLayout>
-                <GridItemsLayout Orientation="Vertical" Span="2"/>
-            </CollectionView.ItemsLayout>
-            <CollectionView.Header>
-                <Grid Padding="5" x:Name="WorldLayout">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"></RowDefinition>
-                        <RowDefinition Height="Auto"></RowDefinition>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"></RowDefinition>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition></ColumnDefinition>
-                        <ColumnDefinition></ColumnDefinition>
-                    </Grid.ColumnDefinitions>
-                    <Label Text="COVID WORLD DATA" FontSize="Medium" Grid.ColumnSpan="2" HorizontalOptions="Center" VerticalOptions="Center"></Label>
-                    <Label Text="https://www.worldometers.info/coronavirus/" Grid.Row="1" FontSize="Medium" Grid.ColumnSpan="2" HorizontalOptions="Center" VerticalOptions="Center"></Label>
+                <CollectionView x:Name="CountryList"
+                            SelectionChanged="Country_Tapped"
+                            SelectionMode="Single"
+                            AbsoluteLayout.LayoutFlags="All" 
+                            AbsoluteLayout.LayoutBounds="0,0,1,1"
+                            Margin="10" IsVisible="false">
+                    <CollectionView.ItemsLayout>
+                        <GridItemsLayout Orientation="Vertical" Span="2"/>
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.Header>
+                        <Grid Padding="5" x:Name="WorldLayout">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"></RowDefinition>
+                                <RowDefinition Height="Auto"></RowDefinition>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"></RowDefinition>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition></ColumnDefinition>
+                                <ColumnDefinition></ColumnDefinition>
+                            </Grid.ColumnDefinitions>
+                            <Label Text="COVID WORLD DATA" FontSize="Medium" Grid.ColumnSpan="2" HorizontalOptions="Center" VerticalOptions="Center"></Label>
+                            <Label Text="https://www.worldometers.info/coronavirus/" Grid.Row="1" FontSize="Medium" Grid.ColumnSpan="2" HorizontalOptions="Center" VerticalOptions="Center"></Label>
+        
+                            <Label Grid.Row="2" Text="Total Cases: " HorizontalOptions="End" VerticalOptions="Center"></Label>
+                            <Label Grid.Row="2" Grid.Column="1" Text="{Binding TotalCases, StringFormat='{}{0:0,0}'}" HorizontalOptions="Start" VerticalOptions="Center"></Label>
+        
+                            <Label Grid.Row="3" Text="Total Deaths: " HorizontalOptions="End" VerticalOptions="Center"></Label>
+                            <Label Grid.Row="3" Grid.Column="1" Text="{Binding TotalDeaths, StringFormat='{}{0:0,0}'}" HorizontalOptions="Start" VerticalOptions="Center"></Label>
+        
+                            <Label Grid.Row="4" Text="New Cases: " HorizontalOptions="End" VerticalOptions="Center"></Label>
+                            <Label Grid.Row="4" Grid.Column="1" Text="{Binding NewCases, StringFormat='{}{0:+0,0}'}" HorizontalOptions="Start" VerticalOptions="Center"></Label>
+        
+                            <Label Grid.Row="5" Text="New Deaths: " HorizontalOptions="End" VerticalOptions="Center"></Label>
+                            <Label Grid.Row="5" Grid.Column="1" Text="{Binding NewDeaths, StringFormat='{}{0:+0,0}'}" HorizontalOptions="Start" VerticalOptions="Center"></Label>
+                            <BoxView Grid.Row="6" WidthRequest="500" HeightRequest="2" Grid.ColumnSpan="2" Color="Black"></BoxView>
 
-                    <Label Grid.Row="2" Text="Total Cases: " HorizontalOptions="End" VerticalOptions="Center"></Label>
-                    <Label Grid.Row="2" Grid.Column="1" Text="{Binding TotalCases, StringFormat='{}{0:0,0}'}" HorizontalOptions="Start" VerticalOptions="Center"></Label>
+                            <StackLayout HorizontalOptions="Fill" Orientation="Horizontal" Grid.Row="7" Grid.ColumnSpan="2">
+                                <Label Text="Yesterday" HorizontalOptions="CenterAndExpand" VerticalOptions="Center" >
+                                </Label>
+                                <Switch x:Name="DaySwitch" HorizontalOptions="CenterAndExpand" VerticalOptions="Center" IsToggled="True" Toggled="DaySwitch_Toggled" ></Switch>
+                                <Label Text="Today" HorizontalOptions="CenterAndExpand" VerticalOptions="Center">
+                                </Label>
+                           </StackLayout>
 
-                    <Label Grid.Row="3" Text="Total Deaths: " HorizontalOptions="End" VerticalOptions="Center"></Label>
-                    <Label Grid.Row="3" Grid.Column="1" Text="{Binding TotalDeaths, StringFormat='{}{0:0,0}'}" HorizontalOptions="Start" VerticalOptions="Center"></Label>
+                             <StackLayout Orientation="Horizontal" Grid.Row="8" Grid.ColumnSpan="2">
+                                <BoxView Color="{StaticResource colorNewCasesLessThanThousand}" WidthRequest="30" HeightRequest="5" ></BoxView>
+                                <Label Text="&lt;1000 New Cases"></Label>
+                            </StackLayout>
 
-                    <Entry Grid.Row="4" Grid.ColumnSpan="2" x:Name="SearchEntry" Placeholder="Search Country">
-                    </Entry>
-                </Grid>
-            </CollectionView.Header>
-            <CollectionView.ItemTemplate>
-                <DataTemplate>
-                      <StackLayout>
-                          <Frame CornerRadius="5" Padding="10,5,10,5" Margin="5" BackgroundColor="LightYellow">
-                            <Label Text="{Binding CountryName}" BackgroundColor="Transparent">
-                            </Label>
-                        </Frame>
-                      </StackLayout>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
+                            <StackLayout Orientation="Horizontal" Grid.Row="9" Grid.ColumnSpan="2">
+                                <BoxView Color="{StaticResource colorNewCasesMoreThanThousand}" WidthRequest="30" HeightRequest="5" ></BoxView>
+                                <Label Text="&gt;=1000 New Cases"></Label>
+                            </StackLayout>
+
+                            <StackLayout Orientation="Horizontal" Grid.Row="10" Grid.ColumnSpan="2">
+                                <BoxView Color="{StaticResource colorNewCasesAndDeathsMoreThanThousand}" WidthRequest="30" HeightRequest="5" ></BoxView>
+                                <Label Text="&gt;=1000 New Cases and New Deaths"></Label>
+                            </StackLayout>
+
+                            <Entry Grid.Row="11" Grid.ColumnSpan="2" Text="" x:Name="SearchEntry" Placeholder="Search Country">
+                                <Entry.Triggers>
+                                    <Trigger TargetType="Entry" Property="Text" Value="">
+                                        <Setter Property="BackgroundColor" Value="LightGray"/>
+                                    </Trigger>
+                                </Entry.Triggers>                 
+                            </Entry>
+                        </Grid>                          
+                    </CollectionView.Header>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                              <StackLayout>
+                                 <Frame CornerRadius="5" Padding="10,5,10,5" Margin="5"> 
+                                    <Label Text="{Binding CountryName}" BackgroundColor="Transparent">                                           
+                                    </Label>
+                                     <Frame.Triggers>
+                                         <DataTrigger TargetType="Frame" Binding="{Binding IsNewCasesMoreThanThousand}" Value="False">
+                                             <Setter Property="BackgroundColor" Value="{StaticResource colorNewCasesLessThanThousand}"/>
+                                         </DataTrigger>
+                                         <DataTrigger TargetType="Frame" Binding="{Binding IsNewCasesMoreThanThousand}" Value="True">
+                                             <Setter Property="BackgroundColor" Value="{StaticResource colorNewCasesMoreThanThousand}"/>
+                                         </DataTrigger>
+                                         <MultiTrigger TargetType="Frame">
+                                             <MultiTrigger.Conditions>
+                                                 <BindingCondition Binding="{Binding IsNewCasesMoreThanThousand}" Value="True"/>
+                                                 <BindingCondition Binding="{Binding IsNewDeathsMoreThanThousand}" Value="True"/>
+                                             </MultiTrigger.Conditions>
+                                             <Setter Property="BackgroundColor" Value="{StaticResource colorNewCasesAndDeathsMoreThanThousand}"/>
+                                         </MultiTrigger>
+                                     </Frame.Triggers>                                         
+                                </Frame>
+                              </StackLayout>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
     </AbsoluteLayout>
 </ContentPage>
