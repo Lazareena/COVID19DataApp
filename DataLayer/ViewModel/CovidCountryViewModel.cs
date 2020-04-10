@@ -8,6 +8,7 @@ namespace DataLayer.ViewModel
     {
         public event PropertyChangedEventHandler PropertyChanged;
         public string CountryName { get; set; }
+        public string Continent { get; set; }
         public int TotalCases { get; set; }
         public int TotalDeaths { get; set; }
         public int NewCasesToday { get; set; }
@@ -62,6 +63,7 @@ namespace DataLayer.ViewModel
             return new CovidCountryViewModel
             {
                 CountryName = countryData.CountryName,
+                Continent = string.IsNullOrWhiteSpace(countryData.Continent) ? "Others" : countryData.Continent,
                 TotalCases = countryData.TotalCases,
                 TotalDeaths = countryData.TotalDeaths,
                 NewCasesToday = countryData.NewCasesToday.NewCases,

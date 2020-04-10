@@ -34,7 +34,9 @@ namespace DataLayer
         private const int _indexColumnCriticalCases = 7;
         private const int _indexColumnCasesPerMillion = 8;
         private const int _indexColumnDeathsPerMillion = 9;
-        private const int _indexColumnDateReportedFirstCase = 10;
+        private const int _indexColumnTotalTest = 10;
+        private const int _indexColumnTotalTestPerMillion = 11;
+        private const int _indexColumnContinent= 12;
 
         private List<CountryData> _covidCountryData = new List<CountryData>();
         private CountryData _totalWorldCovidData;
@@ -110,7 +112,9 @@ namespace DataLayer
                     newCountryData.SeriousCriticalCases = ParseIntValue(relevantColumns[_indexColumnCriticalCases].InnerText);
                     newCountryData.TotalCasesPerMillion = ParseIntValue(relevantColumns[_indexColumnCasesPerMillion].InnerText);
                     newCountryData.TotalDeathsPerMillion = ParseIntValue(relevantColumns[_indexColumnDeathsPerMillion].InnerText);
-                    newCountryData.ReportedFirstCase = ParseDateTime(relevantColumns[_indexColumnDateReportedFirstCase].InnerText);
+                    newCountryData.TotalTest = ParseIntValue(relevantColumns[_indexColumnTotalTest].InnerText);
+                    newCountryData.TotalTestPerMillion = ParseIntValue(relevantColumns[_indexColumnTotalTestPerMillion].InnerText);
+                    newCountryData.Continent = relevantColumns[_indexColumnContinent].InnerText.Trim();
 
                     var yesterdaysData = relevantTableRowsYesterday.FirstOrDefault(r => r.ChildNodes.Any(c => c.Name == _tableDataName && c.InnerText == newCountryData.CountryName));
                     if(yesterdaysData != null)
@@ -139,14 +143,6 @@ namespace DataLayer
                 return 0;
             Int32.TryParse(value.TrimStart('+').Trim(), NumberStyles.AllowThousands, null, out var intValue);
             return intValue;
-        }
-
-        private DateTime ParseDateTime(string value)
-        {
-            DateTime dateTimeValue = DateTime.MinValue;
-            if (!string.IsNullOrWhiteSpace(value))
-                DateTime.TryParse(value.Trim(), null, DateTimeStyles.AllowWhiteSpaces, out dateTimeValue);
-            return dateTimeValue;
         }
     }
 }

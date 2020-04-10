@@ -20,7 +20,10 @@ namespace COVID19_DataApp
     {
         private COVIDDataRepository _dataRepository;
         private List<CovidCountryViewModel> _covidCountryData;
-        private List<CovidCountryViewModel> _displayedCovidCountryList;
+        /// <summary>
+        /// Country Data grouped by Continent
+        /// </summary>
+        private List<IGrouping<string,CovidCountryViewModel>> _displayedCovidCountryGroupedList;
         private CovidCountryViewModel  _worldData;
 
         public MainPage(COVIDDataRepository dataRepository)
@@ -33,9 +36,9 @@ namespace COVID19_DataApp
         public void InitializeUI()
         {
             CountryList.IsVisible = true;
-            _displayedCovidCountryList = _covidCountryData;
+            _displayedCovidCountryGroupedList = _covidCountryData.GroupBy(c => c.Continent).ToList();
             WorldLayout.BindingContext = _worldData;
-            CountryList.ItemsSource = _displayedCovidCountryList;
+            CountryList.ItemsSource = _displayedCovidCountryGroupedList;
             SearchEntry.TextChanged += SearchEntry_TextChanged;
         }
 
@@ -48,12 +51,12 @@ namespace COVID19_DataApp
             var searchTerm = SearchEntry.Text.ToLower();
 
             if (string.IsNullOrWhiteSpace(searchTerm))
-                _displayedCovidCountryList = _covidCountryData;
+                _displayedCovidCountryGroupedList = _covidCountryData.GroupBy(c => c.Continent).ToList(); 
             else
-                _displayedCovidCountryList = _covidCountryData.Where(c => c.CountryName.Length >= searchTerm.Length &&
+                _displayedCovidCountryGroupedList = _covidCountryData.Where(c => c.CountryName.Length >= searchTerm.Length &&
                                                            (string.Equals(c.CountryName, searchTerm, StringComparison.InvariantCultureIgnoreCase)
-                                                            || c.CountryName.ToLower().Contains(searchTerm))).ToList();
-            CountryList.ItemsSource = _displayedCovidCountryList;
+                                                            || c.CountryName.ToLower().Contains(searchTerm))).GroupBy(c => c.Continent).ToList(); 
+            CountryList.ItemsSource = _displayedCovidCountryGroupedList;
             _searchEntryLock.Release();
         }
 
@@ -98,10 +101,13 @@ namespace COVID19_DataApp
         private void DaySwitch_Toggled(System.Object sender, Xamarin.Forms.ToggledEventArgs e)
         {
             _worldData.DisplayNewCasesToday = e.Value;
-            if(_displayedCovidCountryList != null)
+            if(_displayedCovidCountryGroupedList != null)
             {
-                foreach (var c in _displayedCovidCountryList)
-                    c.DisplayNewCasesToday = e.Value;
+                foreach (var continent in _displayedCovidCountryGroupedList)
+                {
+                    foreach (var c in continent)
+                        c.DisplayNewCasesToday = e.Value;
+                }
             }
         }
     }
