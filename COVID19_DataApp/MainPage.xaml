@@ -80,9 +80,25 @@
 
                             <StackLayout HorizontalOptions="Fill" Orientation="Horizontal" Grid.Row="7" Grid.ColumnSpan="2">
                                 <Label Text="Yesterday" HorizontalOptions="CenterAndExpand" VerticalOptions="Center" >
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsToggled, Source={x:Reference DaySwitch}}" Value="False">
+                                            <Setter Property="FontAttributes" Value="Bold"/>
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsToggled, Source={x:Reference DaySwitch}}" Value="True">
+                                            <Setter Property="FontAttributes" Value="None"/>
+                                        </DataTrigger>
+                                    </Label.Triggers>
                                 </Label>
                                 <Switch x:Name="DaySwitch" HorizontalOptions="CenterAndExpand" VerticalOptions="Center" IsToggled="True" Toggled="DaySwitch_Toggled" ></Switch>
                                 <Label Text="Today" HorizontalOptions="CenterAndExpand" VerticalOptions="Center">
+                                     <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsToggled, Source={x:Reference DaySwitch}}" Value="True">
+                                            <Setter Property="FontAttributes" Value="Bold"/>
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsToggled, Source={x:Reference DaySwitch}}" Value="False">
+                                            <Setter Property="FontAttributes" Value="None"/>
+                                        </DataTrigger>
+                                    </Label.Triggers>
                                 </Label>
                            </StackLayout>
 
@@ -106,15 +122,21 @@
                                     <Trigger TargetType="Entry" Property="Text" Value="">
                                         <Setter Property="BackgroundColor" Value="LightGray"/>
                                     </Trigger>
-                                </Entry.Triggers>                 
+                                </Entry.Triggers>
                             </Entry>
                         </Grid>                          
                     </CollectionView.Header>
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
                               <StackLayout>
-                                 <Frame CornerRadius="5" Padding="10,5,10,5" Margin="5"> 
-                                    <Label Text="{Binding CountryName}" BackgroundColor="Transparent">                                           
+                                 <Frame CornerRadius="5"
+                                        Padding="10,5,10,5" Margin="5"> 
+                                    <Label Text="{Binding CountryName}" BackgroundColor="Transparent">
+                                        <Label.Triggers>
+                                            <DataTrigger TargetType="Label" Binding="{Binding IsNewCasesMoreThanThousand}" Value="True">
+                                                <Setter Property="TextColor" Value="White"/>
+                                            </DataTrigger>
+                                        </Label.Triggers>                                           
                                     </Label>
                                      <Frame.Triggers>
                                          <DataTrigger TargetType="Frame" Binding="{Binding IsNewCasesMoreThanThousand}" Value="False">
@@ -130,7 +152,7 @@
                                              </MultiTrigger.Conditions>
                                              <Setter Property="BackgroundColor" Value="{StaticResource colorNewCasesAndDeathsMoreThanThousand}"/>
                                          </MultiTrigger>
-                                     </Frame.Triggers>                                         
+                                     </Frame.Triggers>                                                          
                                 </Frame>
                               </StackLayout>
                         </DataTemplate>

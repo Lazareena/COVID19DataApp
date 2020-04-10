@@ -78,9 +78,11 @@ namespace COVID19_DataApp
             var collectionView = sender as CollectionView;
             var bindingContext = collectionView?.SelectedItem as CovidCountryViewModel;
 
-            if (bindingContext == null)
+            if (collectionView == null || collectionView.SelectionMode == SelectionMode.None || bindingContext == null)
                 return;
+
             collectionView.SelectedItem = null;
+            CountryList.SelectionMode = SelectionMode.None;
 
             var countryDetailsPage = new CountryDetailsPage();
             countryDetailsPage.BindingContext = bindingContext;
@@ -88,6 +90,7 @@ namespace COVID19_DataApp
             countryDetailsPage.OnClose = () =>
             {
                 MainLayout.Children.Remove(countryDetailsPage);
+                CountryList.SelectionMode = SelectionMode.Single;
             };
             MainLayout.Children.Add(countryDetailsPage);
         }
