@@ -143,21 +143,17 @@
                               <StackLayout>
                                  <Frame CornerRadius="5"
                                         Padding="10,5,10,5" Margin="5"> 
-                                    <Label Text="{Binding CountryName}" BackgroundColor="Transparent">
-                                        <Label.Triggers>
-                                            <DataTrigger TargetType="Label" Binding="{Binding IsNewCasesMoreThanThousand}" Value="True">
-                                                <Setter Property="TextColor" Value="White"/>
-                                            </DataTrigger>
-                                        </Label.Triggers>                                           
-                                    </Label>
+                                     <Label x:Name="countryNameLabel" Text="{Binding CountryName}" BackgroundColor="Transparent">                                         
+                                     </Label>
                                      <Frame.Triggers>
                                          <DataTrigger TargetType="Frame" Binding="{Binding IsNewCasesMoreThanThousand}" Value="False">
                                              <Setter Property="BackgroundColor" Value="{StaticResource colorNewCasesLessThanThousand}"/>
                                          </DataTrigger>
                                          <DataTrigger TargetType="Frame" Binding="{Binding IsNewCasesMoreThanThousand}" Value="True">
-                                             <Setter Property="BackgroundColor" Value="{StaticResource colorNewCasesMoreThanThousand}"/>
-                                         </DataTrigger>
-                                         <MultiTrigger TargetType="Frame">
+                                            <Setter Property="BackgroundColor" Value="{StaticResource colorNewCasesMoreThanThousand}"/>
+                                            <Setter TargetName="countryNameLabel" Property="Label.TextColor" Value="White"/>
+                                        </DataTrigger>  
+                                        <MultiTrigger TargetType="Frame">
                                              <MultiTrigger.Conditions>
                                                  <BindingCondition Binding="{Binding IsNewCasesMoreThanThousand}" Value="True"/>
                                                  <BindingCondition Binding="{Binding IsNewDeathsMoreThanThousand}" Value="True"/>
